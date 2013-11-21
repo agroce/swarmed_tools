@@ -279,4 +279,5 @@ typedef struct
     bool noptrassignments;
     bool nofunctioncalls;
     bool noreturns;
+    bool swarm;
 } CommandlineOpt;

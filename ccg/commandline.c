@@ -102,6 +102,8 @@ static void setopt(int index)
       cmdline.nofunctioncalls = true;
     else if(index == 21)
       cmdline.noreturns = true;
+    else if(index == 22)
+      cmdline.swarm = true;
 
     /* Sanity check */
     if(cmdline.max_pointer_depth == 0)
@@ -152,6 +154,7 @@ void processCommandline(int argc, char **argv)
         {"no-ptrassignments", no_argument, NULL, 0},
         {"no-functioncalls", no_argument, NULL, 0},
         {"no-returns", no_argument, NULL, 0},
+	{"swarm", no_argument, NULL, 0},
         {NULL, 0, NULL, 0}
     };
 

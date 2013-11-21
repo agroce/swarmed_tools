@@ -97,6 +97,20 @@ int main(int argc, char **argv)
     init();
     processCommandline(argc, argv);
     srand(cmdline.seed);
+    if (cmdline.swarm) {
+      cmdline.nojumps = rand()%2;
+      cmdline.noternaryexprs = rand()%2;
+      cmdline.nofunctioncallexprs = rand()%2;
+      cmdline.nooperationexprs = rand()%2;
+      cmdline.notestexprs = rand()%2;
+      cmdline.noassignmentexprs = rand()%2;
+      cmdline.noifs = rand()%2;
+      cmdline.nofors = rand()%2;
+      cmdline.noassignments = rand()%2;
+      cmdline.noptrassignments = rand()%2;
+      cmdline.nofunctioncalls = rand()%2;
+      cmdline.noreturns = rand()%2;
+    }
     makeGlobalVariables();
     makeFunction(false);
     printProgram();
