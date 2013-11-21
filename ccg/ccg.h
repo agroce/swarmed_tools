@@ -72,6 +72,7 @@ extern char const * const assignop2str[_assignopmax];
 
 /* Commandline processing */
 void processCommandline(int, char**);
+const char *getCommandlineString(void);
 
 /* Utils */
 void die(const char*, ...);

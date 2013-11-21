@@ -21,11 +21,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <assert.h>
 #include "ccg.h"
 
 extern char *optarg;
 
 CommandlineOpt cmdline;
+
+#define MAX_CMDSTR_LEN 1024
+char cmdstr[MAX_CMDSTR_LEN + 1];
 
 static void printHelp(void)
 {
@@ -104,6 +108,22 @@ static void setopt(int index)
         die("the maximum pointer depth can't be 0 !");
 }
 
+static void setCommandlineString(int argc, char **argv)
+{
+    int i;
+    cmdstr[0] = '\0';
+    for (i = 1; i < argc; i++) {
+        assert((strlen(cmdstr) <= MAX_CMDSTR_LEN) && "Please increase MAX_CMDSTR_LEN!");
+        strcat(cmdstr, argv[i]);
+        strcat(cmdstr, " ");
+    }
+}
+
+const char *getCommandlineString(void)
+{
+    return cmdstr;
+}
+
 void processCommandline(int argc, char **argv)
 {
     int c, index = 0;
@@ -135,6 +155,7 @@ void processCommandline(int argc, char **argv)
         {NULL, 0, NULL, 0}
     };
 
+    setCommandlineString(argc, argv);
     while((c = getopt_long(argc, argv, "hv", longopt, &index)) != -1)
     {
         switch(c)

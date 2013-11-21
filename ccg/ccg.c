@@ -66,6 +66,7 @@ static void printProgram(void)
     VariableList *v;
 
     printf("/* Seed: %d */\n", cmdline.seed);
+    printf("/* Options: %s */\n", getCommandlineString());
 
     puts("#include <stdint.h>");
     puts("#include <stdlib.h>\n\n/* Global variables */");
