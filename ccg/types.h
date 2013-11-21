@@ -268,4 +268,15 @@ typedef struct
     unsigned seed, max_functions, max_localvars, max_function_parameters, max_statements_per_block,
     max_expression_nesting, max_block_nesting, max_pointer_depth;
     bool nojumps;
+    bool noternaryexprs;
+    bool nofunctioncallexprs;
+    bool nooperationexprs;
+    bool notestexprs;
+    bool noassignmentexprs;
+    bool noifs;
+    bool nofors;
+    bool noassignments;
+    bool noptrassignments;
+    bool nofunctioncalls;
+    bool noreturns;
 } CommandlineOpt;

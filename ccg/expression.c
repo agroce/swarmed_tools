@@ -68,7 +68,12 @@ void addExpressionToList(Expression *expression, ExpressionList **list)
     }
 }
 
-#define EXPRESSION_IS_INVALID(t) (((t) == _functioncallexpr && program.numfunctions >= cmdline.max_functions))
+#define EXPRESSION_IS_INVALID(t) (((t) == _functioncallexpr && program.numfunctions >= cmdline.max_functions)\
+				  || ((t) == _ternaryexpr && cmdline.noternaryexprs)\
+				  || ((t) == _functioncallexpr && cmdline.nofunctioncallexprs)\
+				  || ((t) == _operationexpr && cmdline.nooperationexprs)\
+				  || ((t) == _testexpr && cmdline.notestexprs)\
+				  || ((t) == _assignmentexpr && cmdline.noassignmentexprs))
 
 Expression *makeExpression(Context *context, unsigned nesting)
 {

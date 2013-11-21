@@ -68,7 +68,13 @@ void addStatementToList(Statement *statement, StatementList **list)
 #define IS_INVALID ((type == _ptrassignment && (context->nvars == context->nintegers))\
                     || (type == _functioncall && program.numfunctions >= cmdline.max_functions)\
                     || (type == _return && (!nesting || !lastofblock))\
-                    || (type == _goto && (cmdline.nojumps || (context->currfunc->numlabels == 0))))
+                    || (type == _goto && (cmdline.nojumps || (context->currfunc->numlabels == 0)))\
+                    || (type == _if && cmdline.noifs)\
+		    || (type == _for && cmdline.nofors)\
+		    || (type == _assignment && cmdline.noassignments)\
+		    || (type == _ptrassignment && cmdline.noptrassignments)\
+		    || (type == _functioncall && cmdline.nofunctioncalls)\
+		    || (type == _return && cmdline.noreturns))
 
 Statement *makeStatement(Context *context, unsigned nesting, bool lastofblock)
 {

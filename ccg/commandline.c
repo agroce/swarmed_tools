@@ -40,6 +40,17 @@ static void printHelp(void)
     puts("  --max-block-nesting\t\tControl the nesting of the blocks (default 7)");
     puts("  --max-pointer-depth\t\tMaximum depth of a pointer (default 2)");
     puts("  --no-jumps\t\t\tDisables jumps (enabled by default)");
+    puts("  --no-ternaryexprs\t\t\tDisables ternary expressions (enabled by default)");
+    puts("  --no-functioncallexprs\t\t\tDisables function call expressions (enabled by default)");
+    puts("  --no-operationexprs\t\t\tDisables operation expressions (enabled by default)");
+    puts("  --no-testexprs\t\t\tDisables test expressions (enabled by default)");
+    puts("  --no-assignmentexprss\t\t\tDisables assignment expressions (enabled by default)");
+    puts("  --no-ifs\t\t\tDisables ifs (enabled by default)");
+    puts("  --no-fors\t\t\tDisables fors (enabled by default)");
+    puts("  --no-assignments\t\t\tDisables assignments (enabled by default)");
+    puts("  --no-ptrassignments\t\t\tDisables pointer assignments (enabled by default)");
+    puts("  --no-functioncalls\t\t\tDisables function calls (enabled by default)");
+    puts("  --no-returns\t\t\tDisables returns (enabled by default)");
     exit(EXIT_SUCCESS);
 }
 
@@ -65,6 +76,28 @@ static void setopt(int index)
         printHelp();
     else if(index == 10)
         printVersion();
+    else if(index == 11)
+      cmdline.noternaryexprs = true;
+    else if(index == 12)
+      cmdline.nofunctioncallexprs = true;
+    else if(index == 13)
+      cmdline.nooperationexprs = true;
+    else if(index == 14)
+      cmdline.notestexprs = true;
+    else if(index == 15)
+      cmdline.noassignmentexprs = true;
+    else if(index == 16)
+      cmdline.noifs = true;
+    else if(index == 17)
+      cmdline.nofors = true;
+    else if(index == 18)
+      cmdline.noassignments = true;
+    else if(index == 19)
+      cmdline.noptrassignments = true;
+    else if(index == 20)
+      cmdline.nofunctioncalls = true;
+    else if(index == 21)
+      cmdline.noreturns = true;
 
     /* Sanity check */
     if(cmdline.max_pointer_depth == 0)
@@ -88,6 +121,17 @@ void processCommandline(int argc, char **argv)
         {"no-jumps", no_argument, NULL, 0},
         {"help", no_argument, NULL, 0},
         {"version", no_argument, NULL, 0},
+        {"no-ternaryexprs", no_argument, NULL, 0},
+        {"no-functioncallexprs", no_argument, NULL, 0},
+        {"no-operationexprs", no_argument, NULL, 0},
+        {"no-testexprs", no_argument, NULL, 0},
+        {"no-assignmentexprs", no_argument, NULL, 0},
+        {"no-ifs", no_argument, NULL, 0},
+        {"no-fors", no_argument, NULL, 0},
+        {"no-assignments", no_argument, NULL, 0},
+        {"no-ptrassignments", no_argument, NULL, 0},
+        {"no-functioncalls", no_argument, NULL, 0},
+        {"no-returns", no_argument, NULL, 0},
         {NULL, 0, NULL, 0}
     };
 
