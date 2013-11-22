@@ -66,9 +66,6 @@ static void printProgram(void)
     FunctionList *f;
     VariableList *v;
 
-    printf("/* Seed: %u */\n", cmdline.seed);
-    printf("/* Options: %s */\n", getCommandlineString());
-
     puts("#include <stdint.h>");
     puts("#include <stdlib.h>\n\n/* Global variables */");
 
@@ -93,12 +90,21 @@ static void printProgram(void)
          "return 0;\n}");
 }
 
+static void printOptions(void)
+{
+    printf("/* Seed: %u */\n", cmdline.seed);
+    printf("/* Options: %s */\n", getCommandlineString());
+    fflush(stdout);
+}
+
 int main(int argc, char **argv)
 {
     init();
     processCommandline(argc, argv);
     srand(cmdline.seed);
     handleSwarm();
+
+    printOptions();
     makeGlobalVariables();
     makeFunction(false);
     printProgram();
