@@ -23,7 +23,7 @@
 
 #define P_WRITEABLE (1 << 0)
 
-typedef int bool;
+typedef unsigned int bool;
 
 #define true  1
 #define false 0
@@ -280,4 +280,12 @@ typedef struct
     bool nofunctioncalls;
     bool noreturns;
     bool swarm;
+    bool swarmreplay;
 } CommandlineOpt;
+
+typedef enum {
+    SK_None = 0,
+    SK_Flipcoin, /* 50/50 true or false */
+    SK_Upto, /* %x */
+} SwarmKind;
+

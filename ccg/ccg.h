@@ -70,6 +70,11 @@ extern char const * const testop2str[_testopmax];
 extern char const * const arithop2str[_arithopmax];
 extern char const * const assignop2str[_assignopmax];
 
+void initCommandline(void);
+void enableSwarmOptions(void);
+void fakeSwarmOptions(void);
+void handleSwarm(void);
+
 /* Commandline processing */
 void processCommandline(int, char**);
 const char *getCommandlineString(void);
