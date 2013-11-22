@@ -55,6 +55,8 @@ static void printHelp(void)
     puts("  --no-ptrassignments\t\t\tDisables pointer assignments (enabled by default)");
     puts("  --no-functioncalls\t\t\tDisables function calls (enabled by default)");
     puts("  --no-returns\t\t\tDisables returns (enabled by default)");
+    puts("  --swarm\t\t\tEnable swarm testing (disabled by default)");
+    puts("  --swarm-replay\t\t\tUsed for re-generating a swarm-ed program");
     exit(EXIT_SUCCESS);
 }
 
