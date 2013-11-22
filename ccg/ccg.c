@@ -66,7 +66,7 @@ static void printProgram(void)
     FunctionList *f;
     VariableList *v;
 
-    printf("/* Seed: %d */\n", cmdline.seed);
+    printf("/* Seed: %u */\n", cmdline.seed);
     printf("/* Options: %s */\n", getCommandlineString());
 
     puts("#include <stdint.h>");
