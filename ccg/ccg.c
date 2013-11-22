@@ -37,7 +37,8 @@ static unsigned getseed(void)
     if(urandom == -1)
         die("couldn't open /dev/urandom for reading.");
 
-    read(urandom, &seed, sizeof(unsigned));
+    int res = read(urandom, &seed, sizeof(unsigned));
+    assert (res==sizeof(unsigned));
     close(urandom);
 
     return seed;

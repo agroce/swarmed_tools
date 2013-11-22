@@ -34,6 +34,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #if defined __clang__
  #if __clang_major__ < 3 || (__clang_major__ == 3 && __clang_minor__ < 1)
