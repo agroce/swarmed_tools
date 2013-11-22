@@ -70,7 +70,8 @@ void *xcalloc(size_t nmemb, size_t size)
 char *genStars(size_t n)
 {
     static char stars[16];
-
+    
+    // assert (n>0);
     memset(stars, '*', n);
     stars[n] = 0;
 
