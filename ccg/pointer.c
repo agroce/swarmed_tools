@@ -21,6 +21,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <assert.h>
 #include "ccg.h"
 
 #define VARIABLE_IS_NOT_POINTABLE(var) (pointerDepth(var) >= cmdline.max_pointer_depth)
@@ -89,6 +90,7 @@ char *maxDerefdPointer(Variable *var)
     static char buffer[32];
     size_t depth = pointerDepth(var);
 
+    assert((depth > 0) && "Invalid depth!");
     memset(buffer, '*', depth);
     buffer[depth] = 0;
 
