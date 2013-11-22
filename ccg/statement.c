@@ -81,9 +81,12 @@ Statement *makeStatement(Context *context, unsigned nesting, bool lastofblock)
     Statement *ret = xmalloc(sizeof(*ret));
     StatementType type;
 
-    do
+    unsigned int scount = 0;
+    do {
         type = statarray[rand() % (sizeof(statarray) / sizeof(*statarray))];
-    while(IS_INVALID);
+	scount++;
+	assert (scount < 10000);
+    } while(IS_INVALID);
 
     /* 2% of chance to put a label */
     if(!cmdline.nojumps && type != _goto && !(rand() % 50))

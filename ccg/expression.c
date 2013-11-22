@@ -83,9 +83,12 @@ Expression *makeExpression(Context *context, unsigned nesting)
         expression->type = _operandexpr;
     else
     {
-        do
+        unsigned int ecount = 0;
+        do {
             expression->type = exprarray[rand() % (sizeof(exprarray) / sizeof(*exprarray))];
-        while(EXPRESSION_IS_INVALID(expression->type));
+	    ecount++;
+	    assert(ecount < 10000);
+	} while(EXPRESSION_IS_INVALID(expression->type));
     }
 
     (buildfunctions[expression->type])(expression, context, nesting + 1);
