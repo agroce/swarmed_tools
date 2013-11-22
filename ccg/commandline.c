@@ -179,7 +179,7 @@ void initCommandline(void)
     index2swarmkind[swarm_index++] = SK_None;
 
     index2member[index++] = &cmdline.nojumps;
-    index2swarmkind[swarm_index++] = SK_Flipcoin;
+    index2swarmkind[swarm_index++] = SK_None;
 
     /*index == 9: help */
     index2member[index++] = NULL;
@@ -220,7 +220,7 @@ void initCommandline(void)
     index2swarmkind[swarm_index++] = SK_Flipcoin;
 
     index2member[index++] = &cmdline.noreturns;
-    index2swarmkind[swarm_index++] = SK_Flipcoin;
+    index2swarmkind[swarm_index++] = SK_None;
 
     index2member[index++] = &cmdline.swarm;
     index2swarmkind[swarm_index++] = SK_None;
