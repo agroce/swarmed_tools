@@ -153,9 +153,11 @@ static void buildAssignment(Statement *statement, Context *context, unsigned nes
     AssignmentStatement *as = xmalloc(sizeof(*as));
     bool old_disallow_float = context->disallow_float;
 
-    as->op = rand() % _assignopmax /*_assign*/;
-    if ((as->op == _assignmod) || (as->op == _assignand) ||
-            (as->op == _assignor) || (as->op == _assignxor)) {
+    do {
+        as->op = rand() % _assignopmax /*_assign*/;
+    } while (!isValidAssignOp(context, as->op));
+
+    if (isInvalidAssignOpForFloat(as->op)) {
         context->disallow_float = true;
     }
 

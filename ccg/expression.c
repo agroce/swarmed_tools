@@ -177,15 +177,35 @@ void buildTernary(Expression *expression, Context *context, unsigned nesting)
     expression->type = getBinaryExpressionType(te->truepath, te->falsepath);
 }
 
+static bool isValidOperationKind(Context *context, OperationKind k)
+{
+    if (k != _bitwise)
+        return true;
+    return hasIntegerVariables(context);
+}
+
+static bool isValidArithOp(Context *context, ArithOp op)
+{
+    if (op != _mod)
+        return true;
+    return hasIntegerVariables(context);
+}
+
 void buildOperation(Expression *expression, Context *context, unsigned nesting)
 {
     struct OperationExpression *oe = xmalloc(sizeof(*oe));
 
     bool old_disallow_float = context->disallow_float;
-    oe->kind = rand() % _operationkindmax;
+
+    do {
+        oe->kind = rand() % _operationkindmax;
+    } while (!isValidOperationKind(context, oe->kind));
 
     if(oe->kind == _arithmetic) {
-        oe->operator.arithop = rand() % _arithopmax;
+        do {
+            oe->operator.arithop = rand() % _arithopmax;
+        } while (!isValidArithOp(context, oe->operator.arithop));
+
         if (oe->operator.arithop == _mod)
             context->disallow_float = true;
     }
@@ -203,16 +223,29 @@ void buildOperation(Expression *expression, Context *context, unsigned nesting)
     expression->type = getBinaryExpressionType(oe->lefthand, oe->righthand);
 }
 
-#define ASSIGNMENT_OP_IS_INVALID(oprtr, left, right) (((left->type == _float || (IS_FLOATING_POINT_VARIABLE(right))) && (oprtr == _assignmod)))
+bool isInvalidAssignOpForFloat(AssignmentOp op)
+{
+    return ((op == _assignmod) || (op == _assignand) ||
+            (op == _assignor) || (op == _assignxor));
+}
+
+bool isValidAssignOp(Context *context, AssignmentOp op)
+{
+    if (!isInvalidAssignOpForFloat(op))
+        return true;
+    return hasIntegerVariables(context);
+}
 
 void buildAssignment(Expression *expression, Context *context, unsigned nesting)
 {
     struct AssignmentExpression *ae = xmalloc(sizeof(*ae));
     bool old_disallow_float = context->disallow_float;
 
-    ae->op = rand() % _assignopmax;
-    if ((ae->op == _assignmod) || (ae->op == _assignand) ||
-            (ae->op == _assignor) || (ae->op == _assignxor)) {
+    do {
+        ae->op = rand() % _assignopmax /*_assign*/;
+    } while (!isValidAssignOp(context, ae->op));
+
+    if (isInvalidAssignOpForFloat(ae->op)) {
         context->disallow_float = true;
     }
 

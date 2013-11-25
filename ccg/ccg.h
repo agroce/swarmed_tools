@@ -113,6 +113,7 @@ Variable *selectVariable(Context*, VariableType);
 void makeGlobalVariables(void);
 IntegerType ultimateType(Variable*);
 Variable *ultimateVariable(Variable*);
+bool hasIntegerVariables(Context*);
 
 /* Pointer */
 void makePointer(Variable*, Context*);
@@ -152,6 +153,8 @@ void addExpressionToList(Expression*, ExpressionList**);
 Expression *makeExpression(Context*, unsigned);
 ExpressionType makeExpressionType(bool disallow_float);
 void printExpression(Expression*);
+bool isInvalidAssignOpForFloat(AssignmentOp op);
+bool isValidAssignOp(Context *context, AssignmentOp op);
 
 /* Label */
 Label *makeLabel(Context*);

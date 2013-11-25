@@ -149,6 +149,24 @@ static size_t getNumberOfPointersForType(Context *context, VariableType type)
     return n;
 }
 
+bool hasIntegerVariables(Context *context)
+{
+    VariableList *v;
+
+    foreach(v, context->scope)
+    {
+        if (v->variable->type == _integer) {
+            return true;
+        }
+        else if (v->variable->type == _pointer) {
+            Variable *ultimatevar = ultimateVariable(v->variable);
+            if(ultimatevar->type == _integer)
+                return true;
+        }
+    }
+    return false;
+}
+
 Variable *selectVariable(Context *context, VariableType type)
 {
     VariableList *v;
