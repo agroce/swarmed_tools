@@ -67,6 +67,6 @@ Label *selectLabel(Context *context)
             return l->label;
     }
 
-    die("unreachable !");
+    die("selectLabel: unreachable!");
     return NULL;
 }

@@ -27,12 +27,19 @@ Operand *selectOperand(Context *context)
 {
     Operand *operand = xmalloc(sizeof(*operand));
 
-    operand->type = rand() % 3 == 0 ? _constant : _variable;
+    operand->kind = rand() % 3 == 0 ? _constant : _variable;
 
-    if(operand->type == _variable)
+    if(operand->kind == _variable) {
         operand->op.variable = selectVariable(context, _randomvartype);
-    else
-        operand->op.constant = makeIntegerConstant(RANDOM_BITNESS);
+        operand->type = IS_INTEGER_VARIABLE(operand->op.variable) ? _integer_expr : _float_expr;
+    }
+    else {
+        operand->type = makeExpressionType(context->disallow_float);
+        if (operand->type == _integer_expr)
+            operand->op.constant = makeIntegerConstant(RANDOM_BITNESS);
+        else
+            operand->op.constant = makeRandomFloatConstant();
+    }
 
     return operand;
 }

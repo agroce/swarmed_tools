@@ -29,17 +29,19 @@ typedef unsigned int bool;
 #define false 0
 
 typedef enum {_i8, _u8, _i16, _u16, _i32, _u32, _i64, _u64, _inttypemax} IntegerType;
+typedef enum {_f, _d, _ld, _floattypemax} FloatType;
 typedef enum {_if, _for, _functioncall, _return, _assignment, _ptrassignment, _goto, _statementtypemax} StatementType;
-typedef enum {_variable, _constant, _operandtypemax, _none = 42} OperandType;
+typedef enum {_variable, _constant, _operandkindmax, _none = 42} OperandKind;
 typedef enum {_equal, _lowerorequal, _greaterorequal, _lower, greater, _different, _testopmax} TestOp;
 typedef enum {_plus, _minus, _div, _mod, _mul, _arithopmax} ArithOp;
 typedef enum {_bwand, _bwor, _xor, _bitwiseopmax} BitwiseOp;
 typedef enum {_logand, _logor, _logicalopmax} LogicalOp;
-typedef enum {_arithmetic, _bitwise, _logical, _operationtypemax} OperationType;
-typedef enum {_operandexpr, _ternaryexpr, _operationexpr, _testexpr, _assignmentexpr, _functioncallexpr, _expressiontypemax} ExpressionType;
+typedef enum {_arithmetic, _bitwise, _logical, _operationkindmax} OperationKind;
+typedef enum {_operandexpr, _ternaryexpr, _operationexpr, _testexpr, _assignmentexpr, _functioncallexpr, _expressionkindmax} ExpressionKind;
 typedef enum {_assigninc, _assigndec_, _assigndiv, _assignmod, _assignmul, _assignand, _assignor, _assignxor, _assign, _assignopmax} AssignmentOp;
 
-typedef enum {_integer, _pointer, _vartypemax, _randomvartype = 42} VariableType;
+typedef enum {_integer, _float, _pointer, _vartypemax, _randomvartype = 42} VariableType;
+typedef enum {_integer_expr, _float_expr, _exprtypemax} ExpressionType;
 
 typedef uint8_t Permissions;
 
@@ -62,6 +64,12 @@ typedef struct Variable
             IntegerType type;
         } intvar;
 
+        struct FloatVariable
+        {
+            Constant *initializer;
+            FloatType type;
+        } floatvar;
+
         struct Pointer
         {
             struct Variable *pointed;
@@ -79,7 +87,8 @@ typedef struct VL
 
 typedef struct
 {
-    OperandType type;
+    OperandKind kind;
+    ExpressionType type;
 
     union
     {
@@ -153,7 +162,11 @@ typedef struct LL
 typedef struct
 {
     char *name;
-    IntegerType returntype;
+    ExpressionType returntypekind;
+    union {
+        IntegerType inttype;
+        FloatType floattype;
+    } returntype;
     VariableList *paramlist;
     Block *body;
     LabelList *labels;
@@ -197,6 +210,7 @@ typedef struct FL
 
 typedef struct Expr
 {
+    ExpressionKind kind;
     ExpressionType type;
 
     union
@@ -216,7 +230,7 @@ typedef struct Expr
         struct OperationExpression
         {
             struct Expr *lefthand, *righthand;
-            OperationType type;
+            OperationKind kind;
 
             union
             {
@@ -251,7 +265,8 @@ typedef struct EL
 
 typedef struct Context
 {
-    unsigned short nvars, nintegers;
+    unsigned short nvars, nintegers, nfloats;
+    bool disallow_float;
     VariableList *scope;
     Function *currfunc;
 } Context;
@@ -260,7 +275,7 @@ typedef struct
 {
     VariableList *globalvars;
     FunctionList *functions;
-    size_t numfunctions, numglobalvars;
+    size_t numfunctions, numglobalvars, numglobalintvars, numglobalfloatvars;
 } Program;
 
 typedef struct
@@ -279,6 +294,9 @@ typedef struct
     bool noptrassignments;
     bool nofunctioncalls;
     bool noreturns;
+    bool nointegers;
+    bool nofloats;
+    bool nopointers;
     bool swarm;
     bool swarmreplay;
 } CommandlineOpt;

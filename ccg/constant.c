@@ -21,9 +21,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <ctype.h>
 #include "ccg.h"
 
 static const char *hexdigits = "0123456789ABCDEF";
+static const char * const floatpositivebase[_floattypemax] = {
+    "3.40282347", "1.79769313486231571", "1.79769313486231571"
+};
+static const char * const floatnegativebase[_floattypemax] = {
+    "1.175494351", "2.22507385850720138", "2.22507385850720138"
+};
+static const char * const floatexponent[_floattypemax] = {
+    "38", "308", "308"
+};
 
 char *makeHexadecimalValue(unsigned digitNumber)
 {
@@ -51,6 +61,89 @@ Constant *makeIntegerConstant(unsigned bits)
         free(hexvalue);
 
     return ret;
+}
+
+static char *makeRandomStringOfDigits(const char *magicstr) 
+{
+    size_t i;
+    size_t length = strlen(magicstr);
+    char *ret = xcalloc(length + 1, 1);
+    
+    for(i = 0; i < length; ++i) {
+        char c = magicstr[i];
+        if (c == '.') {
+            ret[i] = '.';
+            continue;
+        }
+
+        assert(isdigit(c) && "Invalid Digit String!");
+        int digit = c - '0' + 1;
+        assert((digit <= 10) && "Invalid Digit!");
+        ret[i] = rand() % digit + '0';
+    }
+    return ret;
+}
+
+static Constant *makeZeroFloatConstant(void)
+{
+    Constant *ret = xmalloc(sizeof(*ret));
+    bool positive = rand() % 2;
+    char *sign = positive ? "+" : "-";
+    ret->value = xcalloc(5, 1); /* [+-]0.0\0 */
+    sprintf(ret->value, "%s0.0", sign);
+    return ret;
+}
+
+static Constant *makeSmallFloatConstant(void)
+{
+    Constant *ret = xmalloc(sizeof(*ret));
+    bool positive = rand() % 2;
+    char *sign = positive ? "+" : "-";
+
+    const char *smallbasemagic = "99.99";
+    ret->value = xcalloc(strlen(smallbasemagic) + 2, 1);
+    char *base = makeRandomStringOfDigits(smallbasemagic);
+    sprintf(ret->value, "%s%s", sign, base);
+    free(base);
+    return ret;
+}
+
+static Constant *makeFullFloatConstant(FloatType type)
+{
+    Constant *ret = xmalloc(sizeof(*ret));
+    bool positive = rand() % 2;
+    char *sign = positive ? "+" : "-";
+
+    const char *basemagic = positive ? floatpositivebase[type] : 
+                                  floatnegativebase[type];
+    const char *expmagic = floatexponent[type];
+    ret->value = xcalloc(strlen(basemagic) + strlen(expmagic) + 3, 1);
+    char *base = makeRandomStringOfDigits(basemagic);
+    char *exp = makeRandomStringOfDigits(expmagic);
+    sprintf(ret->value, "%se%s%s", base, sign, exp);
+    free(base);
+    free(exp);
+    
+    return ret;
+}
+
+Constant *makeFloatConstant(FloatType type)
+{
+    if (rand() % 5) {
+        if (rand() % 2)
+            return makeSmallFloatConstant();
+        else 
+            return makeFullFloatConstant(type);
+    }
+    else {
+        return makeZeroFloatConstant();
+    }
+}
+
+Constant *makeRandomFloatConstant(void)
+{
+   FloatType type = rand() % _floattypemax;
+   return makeFloatConstant(type);
 }
 
 void printConstant(Constant *constant)

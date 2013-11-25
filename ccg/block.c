@@ -33,6 +33,8 @@ Block *makeBlock(Context *context, unsigned nesting)
     bcontext->currfunc = context->currfunc;
     bcontext->nvars = context->nvars;
     bcontext->nintegers = context->nintegers;
+    bcontext->nfloats = context->nfloats;
+    bcontext->disallow_float = context->disallow_float;
     bcontext->scope = NULL;
 
     copyVariableList(context->scope, &bcontext->scope);
@@ -48,6 +50,8 @@ Block *makeBlock(Context *context, unsigned nesting)
 
         if(tmp->type == _integer)
             bcontext->nintegers++;
+        else if (tmp->type == _float)
+            bcontext->nfloats++;
 
         addVariableToList(tmp, &(ret->localvars));
         addVariableToList(tmp, &bcontext->scope);

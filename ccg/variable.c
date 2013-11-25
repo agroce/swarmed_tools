@@ -54,28 +54,36 @@ void freeVariableList(VariableList *list)
     }
 }
 
+#define IS_INVALID ((type == _integer && cmdline.nointegers)\
+                    || (type == _float && cmdline.nofloats)\
+                    || (type == _pointer && cmdline.nopointers))
+
 Variable *makeVariable(Context *context, VariableType type)
+
 {
     Variable *ret = xmalloc(sizeof(Variable));
 
-    if(type != _randomvartype)
-    {
+    if(type != _randomvartype) {
         ret->type = type;
-
-        if(type == _integer)
-            makeInteger(ret, context);
-        else
-            makePointer(ret, context);
     }
-
     else
     {
-        if((ret->type = rand() % _vartypemax) == _integer)
-            makeInteger(ret, context);
-        else if(ret->type == _pointer)
-            makePointer(ret, context);
+        unsigned int tcount = 0;
+        do {
+            type = rand() % _vartypemax;
+            tcount++;
+            assert((tcount < 10000) && "Can't find valid type after 10,000 tries");
+        } while(IS_INVALID);
+
+        ret->type = type;
     }
 
+    if(ret->type == _integer)
+        makeInteger(ret, context);
+    else if(ret->type == _float)
+        makeFloat(ret, context);
+    else
+        makePointer(ret, context);
     return ret;
 }
 
@@ -83,13 +91,29 @@ void printVariableDecl(Variable *var)
 {
     if(var->type == _integer)
         printIntegerDecl(var);
+    else if (var->type == _float)
+        printFloatDecl(var);
     else
         printPointerDecl(var);
 }
 
+void printVariableUltimateType(Variable *var)
+{
+    var = ultimateVariable(var);
+    if(var->type == _integer) {
+        printf("%s", inttype2str[var->intvar.type]);
+    }
+    else if(var->type == _float) {
+        printf("%s", floattype2str[var->floatvar.type]);
+    }
+    else{
+        assert(0 && "Invalid variable type!");
+    }
+}
+
 void printVariableType(Variable *var)
 {
-    printf("%s", inttype2str[ultimateType(var)]);
+    printVariableUltimateType(var);
 
     if(var->type == _pointer)
     {
@@ -108,25 +132,86 @@ void copyVariableList(VariableList *src, VariableList **dest)
         addVariableToList(v->variable, dest);
 }
 
+static size_t getNumberOfPointersForType(Context *context, VariableType type)
+{
+    size_t n = 0;
+    Variable *ultimatevar = NULL;
+    VariableList *v;
+
+    foreach(v, context->scope)
+    {
+        if (v->variable->type != _pointer)
+            continue;
+        ultimatevar = ultimateVariable(v->variable);
+        if(ultimatevar->type == type)
+            n++;
+    }
+    return n;
+}
+
 Variable *selectVariable(Context *context, VariableType type)
 {
     VariableList *v;
     size_t n, t = 0;
 
-    if(type == _randomvartype)
-        n = rand() % context->nvars;
-    else
-        n = rand() % (type == _integer ? context->nintegers : (context->nvars - context->nintegers));
+    if(type == _randomvartype) {
+        if(context->disallow_float) {
+            assert(!cmdline.nointegers && "can't select integer variable!");
+            size_t np = getNumberOfPointersForType(context, _float);
+            assert((context->nvars >= (context->nfloats + np)) && "Bad var counts!");
+            n = context->nvars - context->nfloats - np;
+            assert(n && "Can't find valid integer!");
+            n = rand() % n;
+        }
+        else {
+            n = rand() % context->nvars;
+        }
+    }
+    else if(type == _integer) {
+        n = rand() % context->nintegers;
+    }
+    else if(type == _float) {
+        assert(context->disallow_float && "can't have a float type here!");
+        n = rand() % context->nfloats;
+    }
+    else {
+        n = rand() % (context->nvars - context->nintegers - context->nfloats);
+    }
 
     foreach(v, context->scope)
     {
-        if(v->variable->type == type || type == _randomvartype)
+        if (context->disallow_float) {
+            Variable *ultimatevar = ultimateVariable(v->variable);
+            if (ultimatevar->type == _float)
+                continue;
+        }
+        if(v->variable->type == type || type == _randomvartype) {
             if(t++ == n)
                 return v->variable;
+        }
     }
 
-    die("unreachable");
+    die("selectVariable: unreachable!");
     return NULL;
+}
+
+VariableType makeVariableNonPointerType(void)
+{
+    if (!cmdline.nointegers && !cmdline.nofloats) {
+        if(rand() % 4) 
+            return _integer;
+        else
+            return _float;
+    }
+    else if (cmdline.nofloats) {
+        return _integer;
+    }
+    else if (cmdline.nointegers) {
+        return _float;
+    }
+    else {
+        assert(0 && "can't happen (disallowed by checkCommandlineOptions!");
+    }
 }
 
 void makeGlobalVariables(void)
@@ -141,7 +226,15 @@ void makeGlobalVariables(void)
 
     for(i = 0; i < program.numglobalvars; ++i)
     {
-        addVariableToList(makeVariable(c, _integer), &program.globalvars);
+        VariableType t = makeVariableNonPointerType();
+        if (t == _integer)
+            program.numglobalintvars++;
+        else if (t == _float)
+            program.numglobalfloatvars++;
+        else
+            assert(0 && "Invalid variable type!");
+        
+        addVariableToList(makeVariable(c, t), &program.globalvars);
         c->nvars++;
     }
 

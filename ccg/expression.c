@@ -23,7 +23,7 @@
 
 #include "ccg.h"
 
-static const ExpressionType exprarray[10] = {_ternaryexpr, _functioncallexpr, _functioncallexpr, _operationexpr, _operationexpr, _operationexpr, _testexpr, _testexpr, _assignmentexpr, _assignmentexpr};
+static const ExpressionKind exprarray[10] = {_ternaryexpr, _functioncallexpr, _functioncallexpr, _operationexpr, _operationexpr, _operationexpr, _testexpr, _testexpr, _assignmentexpr, _assignmentexpr};
 
 char const * const testop2str[_testopmax] = {"==", "<=", ">=", "<", ">", "!="};
 char const * const arithop2str[_arithopmax] = {"+", "-", "/", "%", "*"};
@@ -38,7 +38,7 @@ void buildTest(Expression*, Context*, unsigned);
 void buildAssignment(Expression*, Context*, unsigned);
 void buildFunctionCall(Expression*, Context*, unsigned);
 
-static void (*buildfunctions[_expressiontypemax])(Expression*, Context*, unsigned) =
+static void (*buildfunctions[_expressionkindmax])(Expression*, Context*, unsigned) =
 {
     [_operandexpr] = buildOperand,
     [_ternaryexpr] = buildTernary,
@@ -78,27 +78,55 @@ void addExpressionToList(Expression *expression, ExpressionList **list)
 Expression *makeExpression(Context *context, unsigned nesting)
 {
     Expression *expression = xmalloc(sizeof(*expression));
+    expression->type = _exprtypemax;
 
     if(nesting >= cmdline.max_expression_nesting)
-        expression->type = _operandexpr;
+        expression->kind = _operandexpr;
     else
     {
         unsigned int ecount = 0;
         do {
-            expression->type = exprarray[rand() % (sizeof(exprarray) / sizeof(*exprarray))];
+            expression->kind = exprarray[rand() % (sizeof(exprarray) / sizeof(*exprarray))];
 	    ecount++;
 	    assert(ecount < 10000);
-	} while(EXPRESSION_IS_INVALID(expression->type));
+	} while(EXPRESSION_IS_INVALID(expression->kind));
     }
 
-    (buildfunctions[expression->type])(expression, context, nesting + 1);
+    (buildfunctions[expression->kind])(expression, context, nesting + 1);
 
     return expression;
+}
+
+ExpressionType makeExpressionType(bool disallow_float)
+{
+    if (disallow_float) {
+        if (cmdline.nointegers)
+            assert(0 && "Can't get return type!");
+        else
+            return _integer_expr;
+    }
+
+    if (!cmdline.nointegers && !cmdline.nofloats) {
+        if (rand() % 4)
+            return _integer_expr;
+        else
+            return _float_expr;
+    }
+    else if (!cmdline.nointegers) {
+        return _integer_expr;
+    }
+    else if (!cmdline.nofloats) {
+        return _float_expr;
+    }
+    else {
+        assert(0 && "Can't make ExpressionType!");
+    }
 }
 
 void buildOperand(Expression *expression, Context *context, unsigned nesting)
 {
     expression->expr.operand = selectOperand(context);
+    expression->type = (expression->expr.operand)->type;
 }
 
 void buildTest(Expression *expression, Context *context, unsigned nesting)
@@ -109,45 +137,91 @@ void buildTest(Expression *expression, Context *context, unsigned nesting)
     te->lefthand = makeExpression(context, nesting + 1), te->righthand = makeExpression(context, nesting + 1);
 
     expression->expr.testexpr = te;
+    expression->type = _integer_expr;
+}
+
+static ExpressionType getBinaryExpressionType(Expression *left, Expression *right)
+{
+    if (left) {
+        assert((left->type != _exprtypemax) && "Invalid type of left expr!");
+        if (left->type == _float_expr)
+            return _float_expr;    
+    }
+
+    assert(right && "NULL right expr!");
+    assert((right->type != _exprtypemax) && "Invalid type of right expr!");
+    return (right->type == _float_expr) ? _float_expr : _integer_expr;
 }
 
 void buildTernary(Expression *expression, Context *context, unsigned nesting)
 {
     struct TernaryExpression *te = xmalloc(sizeof(*te));
 
-    te->test = makeExpression(context, nesting + 1);
-    te->truepath = (rand() % 4) ? makeExpression(context, nesting + 1) : NULL, te->falsepath = makeExpression(context, nesting + 1);
+    bool build_trupath = rand() % 4;
+    bool old_disallow_float = context->disallow_float;
+    if (build_trupath) {
+        context->disallow_float = false;
+        te->test = makeExpression(context, nesting + 1);
+        context->disallow_float = old_disallow_float;
+    }
+    else {
+        te->test = makeExpression(context, nesting + 1);
+        te->truepath = NULL;
+    }
+
+    if (build_trupath) {
+        te->truepath = makeExpression(context, nesting + 1);
+    }
+    te->falsepath = makeExpression(context, nesting + 1);
     expression->expr.ternexpr = te;
+    expression->type = getBinaryExpressionType(te->truepath, te->falsepath);
 }
 
 void buildOperation(Expression *expression, Context *context, unsigned nesting)
 {
     struct OperationExpression *oe = xmalloc(sizeof(*oe));
 
-    oe->lefthand = makeExpression(context, nesting + 1), oe->righthand = makeExpression(context, nesting + 1);
-    oe->type = rand() % _operationtypemax;
+    bool old_disallow_float = context->disallow_float;
+    oe->kind = rand() % _operationkindmax;
 
-    if(oe->type == _arithmetic)
+    if(oe->kind == _arithmetic) {
         oe->operator.arithop = rand() % _arithopmax;
-    else if(oe->type == _bitwise)
+        if (oe->operator.arithop == _mod)
+            context->disallow_float = true;
+    }
+    else if(oe->kind == _bitwise) {
         oe->operator.bitwiseop = rand() % _bitwiseopmax;
-    else
+        context->disallow_float = true;
+    }
+    else {
         oe->operator.logicalop = rand() % _logicalopmax;
+    }
 
+    oe->lefthand = makeExpression(context, nesting + 1), oe->righthand = makeExpression(context, nesting + 1);
+    context->disallow_float = old_disallow_float;
     expression->expr.opexpr = oe;
+    expression->type = getBinaryExpressionType(oe->lefthand, oe->righthand);
 }
 
-#define ASSIGNMENT_OP_IS_INVALID(oprtr, left, right) ((((left->type == _double || left->type == _float) || (IS_FLOATING_POINT_VARIABLE(right))) && (oprtr == _assignmod)))
+#define ASSIGNMENT_OP_IS_INVALID(oprtr, left, right) (((left->type == _float || (IS_FLOATING_POINT_VARIABLE(right))) && (oprtr == _assignmod)))
 
 void buildAssignment(Expression *expression, Context *context, unsigned nesting)
 {
     struct AssignmentExpression *ae = xmalloc(sizeof(*ae));
+    bool old_disallow_float = context->disallow_float;
+
+    ae->op = rand() % _assignopmax;
+    if ((ae->op == _assignmod) || (ae->op == _assignand) ||
+            (ae->op == _assignor) || (ae->op == _assignxor)) {
+        context->disallow_float = true;
+    }
 
     ae->lvalue = selectVariable(context, _randomvartype);
     ae->rvalue = makeExpression(context, nesting + 1);
-    ae->op = rand() % _assignopmax;
 
+    context->disallow_float = old_disallow_float;
     expression->expr.assignexpr= ae;
+    expression->type = IS_INTEGER_VARIABLE(ae->lvalue) ? _integer_expr : _float_expr;
 }
 
 void buildFunctionCall(Expression *expression, Context *context, unsigned nesting)
@@ -156,17 +230,18 @@ void buildFunctionCall(Expression *expression, Context *context, unsigned nestin
     VariableList *v;
 
     fce->paramlist = NULL;
-    fce->function = makeFunction(true);
+    fce->function = makeFunction(true, context->disallow_float);
 
     foreach(v, fce->function->paramlist)
         addExpressionToList(makeExpression(context, nesting + 1), (ExpressionList**) &fce->paramlist);
 
     expression->expr.funccallexpr = fce;
+    expression->type = fce->function->returntypekind;
 }
 
 static void printOperand(Operand *op)
 {
-    if(op->type == _variable)
+    if(op->kind == _variable)
         fputs(USABLE_ID(op->op.variable), stdout);
     else
         printConstant(op->op.constant);
@@ -199,7 +274,7 @@ static void printOperation(struct OperationExpression *oe)
 {
     putchar('(');
     printExpression(oe->lefthand);
-    printf(" %s ", oe->type == _arithmetic ? arithop2str[oe->operator.arithop] : (oe->type == _bitwise ? bitwiseop2str[oe->operator.bitwiseop] : logicalop2str[oe->operator.logicalop]));
+    printf(" %s ", oe->kind == _arithmetic ? arithop2str[oe->operator.arithop] : (oe->kind == _bitwise ? bitwiseop2str[oe->operator.bitwiseop] : logicalop2str[oe->operator.logicalop]));
     printExpression(oe->righthand);
     putchar(')');
 }
@@ -231,7 +306,10 @@ static void printFunctionCall(struct FunctionCallExpression *fce)
 
 void printExpression(Expression *expression)
 {
-    switch(expression->type)
+    assert(expression && "NULL expression!");
+    assert((expression->type != _exprtypemax) && "Invalid expression type!");
+
+    switch(expression->kind)
     {
         case _operandexpr: printOperand(expression->expr.operand); break;
         case _ternaryexpr: printTernary(expression->expr.ternexpr); break;

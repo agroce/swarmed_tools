@@ -61,12 +61,16 @@
 
 #define USABLE_ID(var) (var->type == _pointer ? maxDerefdPointer(var) : var->name)
 
+#define IS_INTEGER_VARIABLE(var) (ultimateVariable(var)->type == _integer)
+
+#define IS_FLOAT_VARIABLE(var) (ultimateVariable(var)->type == _float)
 
 #define CCG_VERSION "0.3"
 
 extern CommandlineOpt cmdline;
 extern Program program;
 extern char const * const inttype2str[_inttypemax];
+extern char const * const floattype2str[_floattypemax];
 extern char const * const testop2str[_testopmax];
 extern char const * const arithop2str[_arithopmax];
 extern char const * const assignop2str[_assignopmax];
@@ -79,6 +83,7 @@ void handleSwarm(void);
 /* Commandline processing */
 void processCommandline(int, char**);
 const char *getCommandlineString(void);
+void checkCommandlineOptions(void);
 
 /* Utils */
 void die(const char*, ...);
@@ -90,18 +95,24 @@ char *genStars(size_t n);
 /* Constant */
 char *makeHexadecimalValue(unsigned);
 Constant *makeIntegerConstant(unsigned);
+Constant *makeFloatConstant(FloatType type);
+bool compatibleFloats(FloatType t1, FloatType t2);
+Constant *makeRandomFloatConstant(void);
 void printConstant(Constant*);
 
 /* Variable */
 Variable *makeVariable(Context*, VariableType);
+VariableType makeVariableNonPointerType(void);
 void addVariableToList(Variable*, VariableList**);
 void freeVariableList(VariableList*);
 void printVariableDecl(Variable*);
 void printVariableType(Variable*);
+void printVariableUltimateType(Variable*);
 void copyVariableList(VariableList*, VariableList**);
 Variable *selectVariable(Context*, VariableType);
 void makeGlobalVariables(void);
 IntegerType ultimateType(Variable*);
+Variable *ultimateVariable(Variable*);
 
 /* Pointer */
 void makePointer(Variable*, Context*);
@@ -115,8 +126,12 @@ void makeInteger(Variable*, Context*);
 bool writeableIntegersExist(Context*);
 void printIntegerDecl(Variable*);
 
+/* Float */
+void makeFloat(Variable*, Context*);
+void printFloatDecl(Variable*);
+
 /* Function */
-Function *makeFunction(bool);
+Function *makeFunction(bool, bool);
 void printFunction(Function*);
 void printFunctionPrototype(Function*);
 
@@ -135,6 +150,7 @@ Operand *selectOperand(Context*);
 /* Expression */
 void addExpressionToList(Expression*, ExpressionList**);
 Expression *makeExpression(Context*, unsigned);
+ExpressionType makeExpressionType(bool disallow_float);
 void printExpression(Expression*);
 
 /* Label */

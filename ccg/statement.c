@@ -65,7 +65,7 @@ void addStatementToList(Statement *statement, StatementList **list)
     }
 }
 
-#define IS_INVALID ((type == _ptrassignment && (context->nvars == context->nintegers))\
+#define IS_INVALID ((type == _ptrassignment && (context->nvars == (context->nintegers + context->nfloats)))\
                     || (type == _functioncall && program.numfunctions >= cmdline.max_functions)\
                     || (type == _return && (!nesting || !lastofblock))\
                     || (type == _goto && (cmdline.nojumps || (context->currfunc->numlabels == 0)))\
@@ -140,7 +140,7 @@ static void buildFunctionCall(Statement *statement, Context *context, unsigned n
     funccallstatement->paramlist = NULL;
     VariableList *v;
 
-    funccallstatement->function = makeFunction(true);
+    funccallstatement->function = makeFunction(true, context->disallow_float);
 
     foreach(v, funccallstatement->function->paramlist)
         addExpressionToList(makeExpression(context, nesting + 1), (ExpressionList**) &funccallstatement->paramlist);
@@ -151,15 +151,33 @@ static void buildFunctionCall(Statement *statement, Context *context, unsigned n
 static void buildAssignment(Statement *statement, Context *context, unsigned nesting)
 {
     AssignmentStatement *as = xmalloc(sizeof(*as));
+    bool old_disallow_float = context->disallow_float;
+
+    as->op = rand() % _assignopmax /*_assign*/;
+    if ((as->op == _assignmod) || (as->op == _assignand) ||
+            (as->op == _assignor) || (as->op == _assignxor)) {
+        context->disallow_float = true;
+    }
 
     as->var = selectVariable(context, _randomvartype);
-    as->op = rand() % _assignopmax /*_assign*/;
     as->expr = makeExpression(context, 0);
 
+    context->disallow_float = old_disallow_float;
     statement->stmnt.assignmentstatement = as;
 }
 
 #define PTRASSIGNMENT_IS_CONSISTENT(lhs, rhs) (INTEGERTYPE_SIZE(ultimateType(lhs)) <= INTEGERTYPE_SIZE(ultimateType(rhs)))
+
+static bool ptrAssignmentIsConsistent(Variable *lhs, Variable *rhs)
+{
+    lhs = ultimateVariable(lhs);
+    rhs = ultimateVariable(rhs);
+    if ((lhs->type == _float) && (rhs->type == _float))
+        return compatibleFloats(lhs->floatvar.type, rhs->floatvar.type);
+    if ((lhs->type == _integer) && (rhs->type == _integer))
+        return (INTEGERTYPE_SIZE(lhs->intvar.type) <= INTEGERTYPE_SIZE(rhs->intvar.type));
+    return false;
+}
 
 static void buildPtrAssignment(Statement *statement, Context *context, unsigned nesting)
 {
@@ -170,7 +188,7 @@ static void buildPtrAssignment(Statement *statement, Context *context, unsigned 
 
     do
         v = selectVariable(context, _randomvartype);
-    while(!PTRASSIGNMENT_IS_CONSISTENT(pas->lhs, v));
+    while(!ptrAssignmentIsConsistent(pas->lhs, v));
 
     pas->rhs = v;
 
@@ -276,7 +294,7 @@ static void printReturnStatement(Statement *statement)
 {
     Operand *retval = statement->stmnt.returnstatement->retval;
 
-    printf("return %s;\n", retval->type == _variable ? USABLE_ID(retval->op.variable) : retval->op.constant->value);
+    printf("return %s;\n", retval->kind == _variable ? USABLE_ID(retval->op.variable) : retval->op.constant->value);
 }
 
 static void printGotoStatement(Statement *statement)

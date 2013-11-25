@@ -90,6 +90,9 @@ static const struct option longopt[] =
     {"no-ptrassignments", no_argument, NULL, 0},
     {"no-functioncalls", no_argument, NULL, 0},
     {"no-returns", no_argument, NULL, 0},
+    {"no-integers", no_argument, NULL, 0},
+    {"no-floats", no_argument, NULL, 0},
+    {"no-pointers", no_argument, NULL, 0},
     {"swarm", no_argument, NULL, 0},
     {"swarm-replay", no_argument, NULL, 0},
     {NULL, 0, NULL, 0}
@@ -222,11 +225,23 @@ void initCommandline(void)
     index2member[index++] = &cmdline.noreturns;
     index2swarmkind[swarm_index++] = SK_None;
 
+    index2member[index++] = &cmdline.nointegers;
+    index2swarmkind[swarm_index++] = SK_None;
+
+    index2member[index++] = &cmdline.nofloats;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.nopointers;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
     index2member[index++] = &cmdline.swarm;
     index2swarmkind[swarm_index++] = SK_None;
 
     index2member[index++] = &cmdline.swarmreplay;
     index2swarmkind[swarm_index++] = SK_None;
+
+    assert((index == opt_length) && "bad index!");
+    assert((swarm_index == opt_length) && "bad swarm_index!");
 }
 
 void handleSwarm(void)
@@ -262,6 +277,12 @@ static void handleOneCommandlineOption(int index)
       sprintf(tmp_str, "--%s ", longopt[index].name);
       strcat(cmdstr, tmp_str);
     }
+}
+
+void checkCommandlineOptions(void)
+{
+    assert((!cmdline.nointegers || !cmdline.nofloats) &&
+           "Can't disallow both integers and floats!");
 }
 
 const char *getCommandlineString(void)

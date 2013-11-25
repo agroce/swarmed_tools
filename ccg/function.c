@@ -57,8 +57,17 @@ char *makeFunctionName(void)
     return name;
 }
 
+static void makeReturnType(Function *func, bool disallow_float)
+{
+    func->returntypekind = makeExpressionType(disallow_float);
+    if (func->returntypekind == _float_expr)
+            func->returntype.floattype = rand() % _floattypemax;
+    else
+            func->returntype.inttype = rand() % _inttypemax;
+}
+
 /* At this point, only global variables are available */
-Function *makeFunction(bool params)
+Function *makeFunction(bool params, bool disallow_float)
 {
     short i, numparams = 0;
     Function *ret = xmalloc(sizeof(*ret));
@@ -68,12 +77,15 @@ Function *makeFunction(bool params)
     context->currfunc = ret;
 
     ret->paramlist = NULL;
-    ret->returntype = rand() % _inttypemax;
+    makeReturnType(ret, disallow_float);
     ret->name = makeFunctionName();
     ret->numlabels = 0;
     ret->labels = NULL;
 
-    context->nvars = context->nintegers = program.numglobalvars;
+    context->nvars = program.numglobalvars;
+    context->nintegers = program.numglobalintvars;
+    context->nfloats = program.numglobalfloatvars;
+    context->disallow_float = false;
     numparams = (params ? rand() % (cmdline.max_function_parameters + 1) : 0);
 
     program.numfunctions++;
@@ -84,11 +96,17 @@ Function *makeFunction(bool params)
 
         for(i = 0; i < numparams; ++i)
         {
-            Variable *v = makeVariable(context, _integer);
+            VariableType t = makeVariableNonPointerType();
+            Variable *v = makeVariable(context, t);
             context->nvars++;
 
             if(v->type == _integer)
                 context->nintegers++;
+            else if(v->type == _float)
+                context->nfloats++;
+            else {
+                assert(0 && "Invalid Variable Type!");
+            }
 
             addVariableToList(v, &ret->paramlist);
             addVariableToList(v, &context->scope);
@@ -111,7 +129,12 @@ void printFunctionPrototype(Function *function)
 {
     VariableList *v;
 
-    printf("%s %s(", inttype2str[function->returntype], function->name);
+    if (function->returntypekind == _integer_expr) {
+        printf("%s %s(", inttype2str[function->returntype.inttype], function->name);
+    }
+    else {
+        printf("%s %s(", floattype2str[function->returntype.floattype], function->name);
+    }
 
     foreach(v, function->paramlist)
     {

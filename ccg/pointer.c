@@ -84,6 +84,15 @@ IntegerType ultimateType(Variable *var)
     return var->intvar.type;
 }
 
+/* go through all the pointers to find the untimated poined variable */
+Variable *ultimateVariable(Variable *var)
+{
+    while(var->type == _pointer)
+        var = var->pointer.pointed;
+
+    return var;
+}
+
 char *maxDerefdPointer(Variable *var)
 {
     static char buffer[32];
@@ -101,8 +110,7 @@ char *maxDerefdPointer(Variable *var)
 void printPointerDecl(Variable *var)
 {
     size_t i, depth = pointerDepth(var);
-
-    printf("%s ", inttype2str[ultimateType(var)]);
+    printVariableUltimateType(var);
 
     for(i = 0; i < depth; ++i)
         putchar('*');

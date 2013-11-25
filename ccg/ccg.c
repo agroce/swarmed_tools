@@ -106,8 +106,9 @@ int main(int argc, char **argv)
     handleSwarm();
 
     printOptions();
+    checkCommandlineOptions();
     makeGlobalVariables();
-    makeFunction(false);
+    makeFunction(false, false);
     printProgram();
 
 #ifdef DEBUG_MEMORY
