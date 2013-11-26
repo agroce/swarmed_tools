@@ -65,6 +65,7 @@
 #define CCG_VERSION "0.3"
 
 extern CommandlineOpt cmdline;
+extern FILE *outputstream;
 extern Program program;
 extern char const * const inttype2str[_inttypemax];
 extern char const * const testop2str[_testopmax];
@@ -75,6 +76,8 @@ void initCommandline(void);
 void enableSwarmOptions(void);
 void fakeSwarmOptions(void);
 void handleSwarm(void);
+void openOutputStream(void);
+void closeOutputStream(void);
 
 /* Commandline processing */
 void processCommandline(int, char**);

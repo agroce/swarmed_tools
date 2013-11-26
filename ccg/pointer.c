@@ -102,10 +102,10 @@ void printPointerDecl(Variable *var)
 {
     size_t i, depth = pointerDepth(var);
 
-    printf("%s ", inttype2str[ultimateType(var)]);
+    fprintf(outputstream, "%s ", inttype2str[ultimateType(var)]);
 
     for(i = 0; i < depth; ++i)
-        putchar('*');
+        putc('*', outputstream);
 
-    printf("%s = &%s;\n", var->name, var->pointer.pointed->name);
+    fprintf(outputstream, "%s = &%s;\n", var->name, var->pointer.pointed->name);
 }

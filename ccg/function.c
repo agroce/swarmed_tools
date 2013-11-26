@@ -111,21 +111,21 @@ void printFunctionPrototype(Function *function)
 {
     VariableList *v;
 
-    printf("%s %s(", inttype2str[function->returntype], function->name);
+    fprintf(outputstream, "%s %s(", inttype2str[function->returntype], function->name);
 
     foreach(v, function->paramlist)
     {
-        printf(v == function->paramlist ? "" : ", ");
+        fprintf(outputstream, v == function->paramlist ? "" : ", ");
         printVariableType(v->variable);
-        printf(" %s", v->variable->name);
+        fprintf(outputstream, " %s", v->variable->name);
     }
 
-    printf(")");
+    fprintf(outputstream, ")");
 }
 
 void printFunction(Function *function)
 {
     printFunctionPrototype(function);
-    putchar('\n');
+    putc('\n', outputstream);
     printBlock(function->body);
 }

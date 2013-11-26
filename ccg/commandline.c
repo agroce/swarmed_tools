@@ -27,6 +27,8 @@
 extern char *optarg;
 
 CommandlineOpt cmdline;
+static char outputfilename[512];
+FILE *outputstream;
 
 #define MAX_CMDSTR_LEN 2048
 char cmdstr[MAX_CMDSTR_LEN + 1];
@@ -35,6 +37,7 @@ static void printHelp(void)
 {
     puts("  -h, --help\t\t\tShow this help");
     puts("  -v, --version\t\t\tPrint the version of CCG");
+    puts("  --output <file>: output generated code to <file> rather than stdout");
     puts("  --seed\t\t\tUse a custom seed (instead of a random one)");
     puts("  --max-functions\t\tMax number of functions to be generated (default 12)");
     puts("  --max-localvars\t\tMax number of variables in a block (default 4)");
@@ -79,6 +82,7 @@ static const struct option longopt[] =
     {"no-jumps", no_argument, NULL, 0},
     {"help", no_argument, NULL, 0},
     {"version", no_argument, NULL, 0},
+    {"output", required_argument, NULL, 0},
     {"no-ternaryexprs", no_argument, NULL, 0},
     {"no-functioncallexprs", no_argument, NULL, 0},
     {"no-operationexprs", no_argument, NULL, 0},
@@ -108,6 +112,8 @@ static void setopt(int index)
         printHelp();
     else if(index == 10)
         printVersion();
+    else if(index == 11)
+        strcpy(outputfilename, optarg);
     else
       *(index2member[index]) = true;
 
@@ -146,7 +152,6 @@ void enableSwarmOptions(void)
         else
             assert(0 && "Unsupported SwarmKind!");
     }
-    /* 12 */
 }
 
 void initCommandline(void)
@@ -188,6 +193,11 @@ void initCommandline(void)
     /*index == 10: version */
     index2member[index++] = NULL;
     index2swarmkind[swarm_index++] = SK_None;
+
+    /*index == 11: output */
+    index2member[index++] = NULL;
+    index2swarmkind[swarm_index++] = SK_None;
+    outputfilename[0] = '\0';
 
     index2member[index++] = &cmdline.noternaryexprs;
     index2swarmkind[swarm_index++] = SK_Flipcoin;
@@ -274,6 +284,23 @@ const char *getCommandlineString(void)
     for (index = 0; index < opt_length; index++)
         handleOneCommandlineOption(index);
     return cmdstr;
+}
+
+void openOutputStream(void)
+{
+    if (outputfilename[0] == '\0') {
+      outputstream = stdout;
+      return;
+    }
+    outputstream = fopen(outputfilename, "w+");
+    assert(outputstream && "Can't open output file!");
+}
+
+void closeOutputStream(void)
+{
+    if (outputfilename[0] == '\0')
+      return;
+    fclose(outputstream);
 }
 
 void processCommandline(int argc, char **argv)

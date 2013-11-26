@@ -89,14 +89,14 @@ void printVariableDecl(Variable *var)
 
 void printVariableType(Variable *var)
 {
-    printf("%s", inttype2str[ultimateType(var)]);
+    fprintf(outputstream, "%s", inttype2str[ultimateType(var)]);
 
     if(var->type == _pointer)
     {
         size_t n = pointerDepth(var);
 
         for(size_t i = 0; i < n; ++i)
-            putchar('*');
+            putc('*', outputstream);
     }
 }
 
