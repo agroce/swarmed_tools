@@ -275,66 +275,66 @@ void buildFunctionCall(Expression *expression, Context *context, unsigned nestin
 static void printOperand(Operand *op)
 {
     if(op->kind == _variable)
-        fputs(USABLE_ID(op->op.variable), stdout);
+        fputs(USABLE_ID(op->op.variable), outputstream);
     else
         printConstant(op->op.constant);
 }
 
 void printTest(struct TestExpression *te)
 {
-    putchar('(');
+    putc('(', outputstream);
     printExpression(te->lefthand);
-    printf(" %s ", testop2str[te->op]);
+    fprintf(outputstream, " %s ", testop2str[te->op]);
     printExpression(te->righthand);
-    putchar(')');
+    putc(')', outputstream);
 }
 
 static void printTernary(struct TernaryExpression *te)
 {
-    putchar('(');
+    putc('(', outputstream);
     printExpression(te->test);
-    fputs(" ? ", stdout);
+    fputs(" ? ", outputstream);
 
     if(te->truepath)
         printExpression(te->truepath);
 
-    fputs(" : ", stdout);
+    fputs(" : ", outputstream);
     printExpression(te->falsepath);
-    putchar(')');
+    putc(')', outputstream);
 }
 
 static void printOperation(struct OperationExpression *oe)
 {
-    putchar('(');
+    putc('(', outputstream);
     printExpression(oe->lefthand);
-    printf(" %s ", oe->kind == _arithmetic ? arithop2str[oe->operator.arithop] : (oe->kind == _bitwise ? bitwiseop2str[oe->operator.bitwiseop] : logicalop2str[oe->operator.logicalop]));
+    fprintf(outputstream, " %s ", oe->kind == _arithmetic ? arithop2str[oe->operator.arithop] : (oe->kind == _bitwise ? bitwiseop2str[oe->operator.bitwiseop] : logicalop2str[oe->operator.logicalop]));
     printExpression(oe->righthand);
-    putchar(')');
+    putc(')', outputstream);
 }
 
 static void printAssignment(struct AssignmentExpression *ae)
 {
-    putchar('(');
-    printf("%s %s ", USABLE_ID(ae->lvalue), assignop2str[ae->op]);
+    putc('(', outputstream);
+    fprintf(outputstream, "%s %s ", USABLE_ID(ae->lvalue), assignop2str[ae->op]);
     printExpression(ae->rvalue);
-    putchar(')');
+    putc(')', outputstream);
 }
 
 static void printFunctionCall(struct FunctionCallExpression *fce)
 {
     ExpressionList *e;
 
-    printf("%s(", fce->function->name);
+    fprintf(outputstream, "%s(", fce->function->name);
 
     foreach(e, fce->paramlist)
     {
         printExpression(e->expression);
 
         if(e->next)
-            fputs(", ", stdout);
+            fputs(", ", outputstream);
     }
 
-    putchar(')');
+    putc(')', outputstream);
 }
 
 void printExpression(Expression *expression)

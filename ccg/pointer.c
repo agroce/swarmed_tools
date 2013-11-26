@@ -115,7 +115,7 @@ void printPointerDecl(Variable *var)
     printVariableUltimateType(var);
 
     for(i = 0; i < depth; ++i)
-        putchar('*');
+        putc('*', outputstream);
 
-    printf("%s = &%s;\n", var->name, var->pointer.pointed->name);
+    fprintf(outputstream, "%s = &%s;\n", var->name, var->pointer.pointed->name);
 }

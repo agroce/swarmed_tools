@@ -148,6 +148,6 @@ Constant *makeRandomFloatConstant(void)
 
 void printConstant(Constant *constant)
 {
-    fputs(constant->value, stdout);
+    fputs(constant->value, outputstream);
     /* And... we are done. */
 }

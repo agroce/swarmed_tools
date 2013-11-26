@@ -130,25 +130,25 @@ void printFunctionPrototype(Function *function)
     VariableList *v;
 
     if (function->returntypekind == _integer_expr) {
-        printf("%s %s(", inttype2str[function->returntype.inttype], function->name);
+        fprintf(outputstream, "%s %s(", inttype2str[function->returntype.inttype], function->name);
     }
     else {
-        printf("%s %s(", floattype2str[function->returntype.floattype], function->name);
+        fprintf(outputstream, "%s %s(", floattype2str[function->returntype.floattype], function->name);
     }
 
     foreach(v, function->paramlist)
     {
-        printf(v == function->paramlist ? "" : ", ");
+        fprintf(outputstream, v == function->paramlist ? "" : ", ");
         printVariableType(v->variable);
-        printf(" %s", v->variable->name);
+        fprintf(outputstream, " %s", v->variable->name);
     }
 
-    printf(")");
+    fprintf(outputstream, ")");
 }
 
 void printFunction(Function *function)
 {
     printFunctionPrototype(function);
-    putchar('\n');
+    putc('\n', outputstream);
     printBlock(function->body);
 }

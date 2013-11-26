@@ -35,6 +35,6 @@ bool compatibleFloats(FloatType t1, FloatType t2)
 
 void printFloatDecl(Variable *var)
 {
-    printf("%s %s = %s;\n", floattype2str[var->floatvar.type], var->name, var->floatvar.initializer->value);
+    fprintf(outputstream, "%s %s = %s;\n", floattype2str[var->floatvar.type], var->name, var->floatvar.initializer->value);
 }
 

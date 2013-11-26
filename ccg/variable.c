@@ -101,10 +101,10 @@ void printVariableUltimateType(Variable *var)
 {
     var = ultimateVariable(var);
     if(var->type == _integer) {
-        printf("%s", inttype2str[var->intvar.type]);
+        fprintf(outputstream, "%s", inttype2str[var->intvar.type]);
     }
     else if(var->type == _float) {
-        printf("%s", floattype2str[var->floatvar.type]);
+        fprintf(outputstream, "%s", floattype2str[var->floatvar.type]);
     }
     else{
         assert(0 && "Invalid variable type!");
@@ -120,7 +120,7 @@ void printVariableType(Variable *var)
         size_t n = pointerDepth(var);
 
         for(size_t i = 0; i < n; ++i)
-            putchar('*');
+            putc('*', outputstream);
     }
 }
 

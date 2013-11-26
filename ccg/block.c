@@ -80,7 +80,7 @@ void printBlock(Block *block)
     VariableList *v;
     StatementList *s;
 
-    puts("{");
+    fputs("{", outputstream);
 
     foreach(v, block->localvars)
         printVariableDecl(v->variable);
@@ -88,5 +88,5 @@ void printBlock(Block *block)
     foreach(s, block->statementlist)
         printStatement(s->statement);
 
-    puts("}");
+    fputs("}", outputstream);
 }

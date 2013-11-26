@@ -220,14 +220,14 @@ static void printIfStatement(Statement *statement)
 {
     IfStatement *ifstatement = statement->stmnt.ifstatement;
 
-    fputs("if(", stdout);
+    fputs("if(", outputstream);
     printExpression(ifstatement->condition);
-    puts(")");
+    fputs(")", outputstream);
     printBlock(ifstatement->truepath);
 
     if(ifstatement->falsepath)
     {
-        puts("else");
+        fputs("else", outputstream);
         printBlock(ifstatement->falsepath);
     }
 }
@@ -237,7 +237,7 @@ static void printForStatement(Statement *statement)
     ForStatement *forstatement = statement->stmnt.forstatement;
     char *id = USABLE_ID(forstatement->iterator);
 
-    printf("for(%s = %d; %s %s %d; %s %s %d)\n", id, forstatement->init,
+    fprintf(outputstream, "for(%s = %d; %s %s %d; %s %s %d)\n", id, forstatement->init,
            id, testop2str[forstatement->testop], forstatement->testval,
            id, assignop2str[forstatement->assignop], forstatement->incval);
 
@@ -248,9 +248,9 @@ static void printAssignmentStatement(Statement *statement)
 {
     AssignmentStatement *assignstatement = statement->stmnt.assignmentstatement;
 
-    printf("%s %s ", USABLE_ID(assignstatement->var), assignop2str[assignstatement->op]);
+    fprintf(outputstream, "%s %s ", USABLE_ID(assignstatement->var), assignop2str[assignstatement->op]);
     printExpression(assignstatement->expr);
-    puts(";");
+    fputs(";", outputstream);
 }
 
 static void printPtrAssignmentStatement(Statement *statement)
@@ -261,16 +261,16 @@ static void printPtrAssignmentStatement(Statement *statement)
     if(pas->rhs->type == _pointer)
     {
         if(lhsdepth == rhsdepth)
-            printf("%s = %s;\n", pas->lhs->name, pas->rhs->name);
+            fprintf(outputstream, "%s = %s;\n", pas->lhs->name, pas->rhs->name);
         else if(lhsdepth < rhsdepth)
-            printf("%s = %s%s;\n", pas->lhs->name, genStars(rhsdepth - lhsdepth), pas->rhs->name);
+            fprintf(outputstream, "%s = %s%s;\n", pas->lhs->name, genStars(rhsdepth - lhsdepth), pas->rhs->name);
         else
-            printf("%s%s = %s;\n", genStars(lhsdepth - rhsdepth), pas->lhs->name, pas->rhs->name);
+            fprintf(outputstream, "%s%s = %s;\n", genStars(lhsdepth - rhsdepth), pas->lhs->name, pas->rhs->name);
     }
 
     else
     {
-        printf("%s%s = &%s;\n", genStars(lhsdepth - rhsdepth - 1), pas->lhs->name, pas->rhs->name);
+        fprintf(outputstream, "%s%s = &%s;\n", genStars(lhsdepth - rhsdepth - 1), pas->lhs->name, pas->rhs->name);
     }
 }
 
@@ -279,29 +279,29 @@ static void printFunctionCallStatement(Statement *statement)
     ExpressionList *e;
     FunctionCallStatement *funccallstatement = statement->stmnt.funccallstatement;
 
-    printf("\n%s(", funccallstatement->function->name);
+    fprintf(outputstream, "\n%s(", funccallstatement->function->name);
 
     foreach(e, funccallstatement->paramlist)
     {
         printExpression(e->expression);
 
         if(e->next)
-            fputs(", ", stdout);
+            fputs(", ", outputstream);
     }
 
-    puts(");");
+    fputs(");", outputstream);
 }
 
 static void printReturnStatement(Statement *statement)
 {
     Operand *retval = statement->stmnt.returnstatement->retval;
 
-    printf("return %s;\n", retval->kind == _variable ? USABLE_ID(retval->op.variable) : retval->op.constant->value);
+    fprintf(outputstream, "return %s;\n", retval->kind == _variable ? USABLE_ID(retval->op.variable) : retval->op.constant->value);
 }
 
 static void printGotoStatement(Statement *statement)
 {
-    printf("goto %s;\n", statement->stmnt.gotostatement->label->name);
+    fprintf(outputstream, "goto %s;\n", statement->stmnt.gotostatement->label->name);
 }
 
 void printStatement(Statement *statement)
@@ -318,7 +318,7 @@ void printStatement(Statement *statement)
     };
 
     if(statement->label)
-        printf("%s:\n", statement->label->name);
+        fprintf(outputstream, "%s:\n", statement->label->name);
 
     (printfunctions[statement->type])(statement);
 }

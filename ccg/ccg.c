@@ -67,35 +67,35 @@ static void printProgram(void)
     FunctionList *f;
     VariableList *v;
 
-    puts("#include <stdint.h>");
-    puts("#include <stdlib.h>\n\n/* Global variables */");
+    fputs("#include <stdint.h>", outputstream);
+    fputs("#include <stdlib.h>\n\n/* Global variables */", outputstream);
 
     foreach(v, program.globalvars)
         printVariableDecl(v->variable);
 
-    puts("\n/* Function prototypes */");
+    fputs("\n/* Function prototypes */", outputstream);
 
     foreach(f, program.functions)
     {
         printFunctionPrototype(f->function);
-        puts(";");
+        fputs(";", outputstream);
     }
 
-    putchar('\n');
+    putc('\n', outputstream);
 
     foreach(f, program.functions)
         printFunction(f->function);
 
-    puts("\nint main(void)\n{\n"
+    fputs("\nint main(void)\n{\n"
          "func_0();\n"
-         "return 0;\n}");
+         "return 0;\n}", outputstream);
 }
 
 static void printOptions(void)
 {
-    printf("/* Seed: %u */\n", cmdline.seed);
-    printf("/* Options: %s */\n", getCommandlineString());
-    fflush(stdout);
+    fprintf(outputstream, "/* Seed: %u */\n", cmdline.seed);
+    fprintf(outputstream, "/* Options: %s */\n", getCommandlineString());
+    fflush(outputstream);
 }
 
 int main(int argc, char **argv)
@@ -105,11 +105,13 @@ int main(int argc, char **argv)
     srand(cmdline.seed);
     handleSwarm();
 
+    openOutputStream();
     printOptions();
     checkCommandlineOptions();
     makeGlobalVariables();
     makeFunction(false, false);
     printProgram();
+    closeOutputStream();
 
 #ifdef DEBUG_MEMORY
     fprintf(stderr, "Allocated bytes : %llu.\n", allocated_bytes);

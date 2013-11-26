@@ -46,5 +46,5 @@ void makeInteger(Variable *var, Context *context)
 
 void printIntegerDecl(Variable *var)
 {
-    printf("%s %s = %s;\n", inttype2str[var->intvar.type], var->name, var->intvar.initializer->value);
+    fprintf(outputstream, "%s %s = %s;\n", inttype2str[var->intvar.type], var->name, var->intvar.initializer->value);
 }
