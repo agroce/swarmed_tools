@@ -202,12 +202,12 @@ static void printIfStatement(Statement *statement)
 
     fputs("if(", outputstream);
     printExpression(ifstatement->condition);
-    fputs(")", outputstream);
+    fputs(")\n", outputstream);
     printBlock(ifstatement->truepath);
 
     if(ifstatement->falsepath)
     {
-        fputs("else", outputstream);
+        fputs("else\n", outputstream);
         printBlock(ifstatement->falsepath);
     }
 }
@@ -230,7 +230,7 @@ static void printAssignmentStatement(Statement *statement)
 
     fprintf(outputstream, "%s %s ", USABLE_ID(assignstatement->var), assignop2str[assignstatement->op]);
     printExpression(assignstatement->expr);
-    fputs(";", outputstream);
+    fputs(";\n", outputstream);
 }
 
 static void printPtrAssignmentStatement(Statement *statement)
@@ -269,7 +269,7 @@ static void printFunctionCallStatement(Statement *statement)
             fputs(", ", outputstream);
     }
 
-    fputs(");", outputstream);
+    fputs(");\n", outputstream);
 }
 
 static void printReturnStatement(Statement *statement)

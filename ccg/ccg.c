@@ -67,18 +67,18 @@ static void printProgram(void)
     FunctionList *f;
     VariableList *v;
 
-    fputs("#include <stdint.h>", outputstream);
-    fputs("#include <stdlib.h>\n\n/* Global variables */", outputstream);
+    fputs("#include <stdint.h>\n", outputstream);
+    fputs("#include <stdlib.h>\n\n/* Global variables */\n", outputstream);
 
     foreach(v, program.globalvars)
         printVariableDecl(v->variable);
 
-    fputs("\n/* Function prototypes */", outputstream);
+    fputs("\n/* Function prototypes */\n", outputstream);
 
     foreach(f, program.functions)
     {
         printFunctionPrototype(f->function);
-        fputs(";", outputstream);
+        fputs(";\n", outputstream);
     }
 
     putc('\n', outputstream);
@@ -88,7 +88,7 @@ static void printProgram(void)
 
     fputs("\nint main(void)\n{\n"
          "func_0();\n"
-         "return 0;\n}", outputstream);
+         "return 0;\n\n}", outputstream);
 }
 
 static void printOptions(void)
