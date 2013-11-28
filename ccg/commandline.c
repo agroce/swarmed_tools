@@ -58,6 +58,7 @@ static void printHelp(void)
     puts("  --no-ptrassignments\t\t\tDisables pointer assignments (enabled by default)");
     puts("  --no-functioncalls\t\t\tDisables function calls (enabled by default)");
     puts("  --no-returns\t\t\tDisables returns (enabled by default)");
+    puts("  --no-pointers\t\t\tDisables pointers (enabled by default)");
     puts("  --swarm\t\t\tEnable swarm testing (disabled by default)");
     puts("  --swarm-replay\t\t\tUsed for re-generating a swarm-ed program");
     exit(EXIT_SUCCESS);
@@ -94,6 +95,7 @@ static const struct option longopt[] =
     {"no-ptrassignments", no_argument, NULL, 0},
     {"no-functioncalls", no_argument, NULL, 0},
     {"no-returns", no_argument, NULL, 0},
+    {"no-pointers", no_argument, NULL, 0},
     {"swarm", no_argument, NULL, 0},
     {"swarm-replay", no_argument, NULL, 0},
     {NULL, 0, NULL, 0}
@@ -231,6 +233,9 @@ void initCommandline(void)
 
     index2member[index++] = &cmdline.noreturns;
     index2swarmkind[swarm_index++] = SK_None;
+
+    index2member[index++] = &cmdline.nopointers;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
 
     index2member[index++] = &cmdline.swarm;
     index2swarmkind[swarm_index++] = SK_None;

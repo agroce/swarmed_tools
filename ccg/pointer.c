@@ -100,6 +100,8 @@ char *maxDerefdPointer(Variable *var)
 
 void printPointerDecl(Variable *var)
 {
+    if (cmdline.nopointers)
+        assert(0 && "No pointers!");
     size_t i, depth = pointerDepth(var);
 
     fprintf(outputstream, "%s ", inttype2str[ultimateType(var)]);

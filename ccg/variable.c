@@ -54,6 +54,13 @@ void freeVariableList(VariableList *list)
     }
 }
 
+static bool isValidType(VariableType type)
+{
+    if (type == _pointer && cmdline.nopointers)
+        return false;
+    return true;
+}
+
 Variable *makeVariable(Context *context, VariableType type)
 {
     Variable *ret = xmalloc(sizeof(Variable));
@@ -62,20 +69,22 @@ Variable *makeVariable(Context *context, VariableType type)
     {
         ret->type = type;
 
-        if(type == _integer)
-            makeInteger(ret, context);
-        else
-            makePointer(ret, context);
     }
-
     else
     {
-        if((ret->type = rand() % _vartypemax) == _integer)
-            makeInteger(ret, context);
-        else if(ret->type == _pointer)
-            makePointer(ret, context);
+        unsigned int tcount = 0;
+        do {
+            type = rand() % _vartypemax;
+            tcount++;
+            assert((tcount < 10000) && "Can't find valid type after 10,000 tries");
+        } while(!isValidType(type));
+        ret->type = type;
     }
 
+    if(ret->type == _integer)
+        makeInteger(ret, context);
+    else
+        makePointer(ret, context);
     return ret;
 }
 
