@@ -59,6 +59,12 @@ static void printHelp(void)
     puts("  --no-functioncalls\t\t\tDisables function calls (enabled by default)");
     puts("  --no-returns\t\t\tDisables returns (enabled by default)");
     puts("  --no-pointers\t\t\tDisables pointers (enabled by default)");
+    puts("  --no-signed-integers\t\t\tDisables signed integers (enabled by default)");
+    puts("  --no-unsigned-integers\t\t\tDisables unsigned integers (enabled by default)");
+    puts("  --no-int8\t\t\tDisables both int8_t and uint8_t integers (enabled by default)");
+    puts("  --no-int16\t\t\tDisables both int16_t and uint16_t integers (enabled by default)");
+    puts("  --no-int32\t\t\tDisables both int32_t and uint32_t integers (enabled by default)");
+    puts("  --no-int64\t\t\tDisables both int64_t and uint64_t integers (enabled by default)");
     puts("  --swarm\t\t\tEnable swarm testing (disabled by default)");
     puts("  --swarm-replay\t\t\tUsed for re-generating a swarm-ed program");
     exit(EXIT_SUCCESS);
@@ -96,6 +102,12 @@ static const struct option longopt[] =
     {"no-functioncalls", no_argument, NULL, 0},
     {"no-returns", no_argument, NULL, 0},
     {"no-pointers", no_argument, NULL, 0},
+    {"no-signed-integers", no_argument, NULL, 0},
+    {"no-unsigned-integers", no_argument, NULL, 0},
+    {"no-int8", no_argument, NULL, 0},
+    {"no-int16", no_argument, NULL, 0},
+    {"no-int32", no_argument, NULL, 0},
+    {"no-int64", no_argument, NULL, 0},
     {"swarm", no_argument, NULL, 0},
     {"swarm-replay", no_argument, NULL, 0},
     {NULL, 0, NULL, 0}
@@ -237,11 +249,59 @@ void initCommandline(void)
     index2member[index++] = &cmdline.nopointers;
     index2swarmkind[swarm_index++] = SK_Flipcoin;
 
+    index2member[index++] = &cmdline.nosignedintegers;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.nounsignedintegers;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.noint8;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.noint16;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.noint32;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.noint64;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
     index2member[index++] = &cmdline.swarm;
     index2swarmkind[swarm_index++] = SK_None;
 
     index2member[index++] = &cmdline.swarmreplay;
     index2swarmkind[swarm_index++] = SK_None;
+}
+
+#define ADD_VALID_INTEGERS(width)\
+    if (!cmdline.noint##width) {\
+        if (!cmdline.nosignedintegers)\
+            validinttypes[numofvalidinttypes++] = _i##width;\
+        if (!cmdline.nounsignedintegers)\
+            validinttypes[numofvalidinttypes++] = _u##width;\
+    }
+
+static void validateIntegerTypes(void)
+{
+    /* avoid bad swarmed options */
+    if (cmdline.nosignedintegers && cmdline.nounsignedintegers) {
+        cmdline.nosignedintegers = false;
+        cmdline.nounsignedintegers = false;
+    }
+
+    if (cmdline.noint8 && cmdline.noint16 && cmdline.noint32 && cmdline.noint64) {
+        cmdline.noint8 = false;
+        cmdline.noint16 = false;
+        cmdline.noint32 = false;
+        cmdline.noint64 = false;
+    }
+
+    assert(numofvalidinttypes == 0 && "initial value of numofvalidinttypes must be 0!");
+    ADD_VALID_INTEGERS(8);
+    ADD_VALID_INTEGERS(16);
+    ADD_VALID_INTEGERS(32);
+    ADD_VALID_INTEGERS(64);
 }
 
 void handleSwarm(void)
@@ -256,6 +316,7 @@ void handleSwarm(void)
          */
         fakeSwarmOptions();
     }
+    validateIntegerTypes();
 }
 
 static void handleOneCommandlineOption(int index)

@@ -68,6 +68,8 @@ extern CommandlineOpt cmdline;
 extern FILE *outputstream;
 extern Program program;
 extern char const * const inttype2str[_inttypemax];
+extern IntegerType validinttypes[_inttypemax]; /* hold all valid IntegerType(s) */
+extern int numofvalidinttypes; /* the number of all valid IntegerType(s) */
 extern char const * const testop2str[_testopmax];
 extern char const * const arithop2str[_arithopmax];
 extern char const * const assignop2str[_assignopmax];
@@ -115,6 +117,7 @@ void printPointerDecl(Variable*);
 
 /* Integer */
 void makeInteger(Variable*, Context*);
+IntegerType makeIntegerType(void);
 bool writeableIntegersExist(Context*);
 void printIntegerDecl(Variable*);
 

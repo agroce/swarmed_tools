@@ -26,6 +26,10 @@
 static char const * const inttype2varid[_inttypemax] = {"c", "uc", "s", "us", "i", "ui", "li", "uli"};
 char const * const inttype2str[_inttypemax] = {"int8_t", "uint8_t", "int16_t", "uint16_t", "int32_t", "uint32_t", "int64_t", "uint64_t"};
 
+IntegerType validinttypes[_inttypemax];
+int numofvalidinttypes;
+
+
 static char *makeIntegerName(IntegerType type, Context *context)
 {
     char buffer[32] = {0}, *ret;
@@ -37,9 +41,17 @@ static char *makeIntegerName(IntegerType type, Context *context)
     return ret;
 }
 
+IntegerType makeIntegerType(void)
+{
+    assert(numofvalidinttypes > 0 && "No valid int types");
+    assert(numofvalidinttypes <= _inttypemax && "Invalid numofvalidinttypes!");
+    int index =  rand() % numofvalidinttypes;
+    return validinttypes[index];
+}
+
 void makeInteger(Variable *var, Context *context)
 {
-    var->intvar.type = rand() % _inttypemax;
+    var->intvar.type = makeIntegerType();
     var->intvar.initializer = makeIntegerConstant(INTEGERTYPE_SIZE(var->intvar.type));
     var->name = makeIntegerName(var->intvar.type, context);
 }

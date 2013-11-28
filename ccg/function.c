@@ -68,7 +68,7 @@ Function *makeFunction(bool params)
     context->currfunc = ret;
 
     ret->paramlist = NULL;
-    ret->returntype = rand() % _inttypemax;
+    ret->returntype = makeIntegerType();
     ret->name = makeFunctionName();
     ret->numlabels = 0;
     ret->labels = NULL;

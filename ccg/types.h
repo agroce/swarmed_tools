@@ -280,6 +280,12 @@ typedef struct
     bool nofunctioncalls;
     bool noreturns;
     bool nopointers;
+    bool nosignedintegers;
+    bool nounsignedintegers;
+    bool noint8;
+    bool noint16;
+    bool noint32;
+    bool noint64;
     bool swarm;
     bool swarmreplay;
 } CommandlineOpt;
