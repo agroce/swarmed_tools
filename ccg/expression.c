@@ -120,12 +120,29 @@ void buildTernary(Expression *expression, Context *context, unsigned nesting)
     expression->expr.ternexpr = te;
 }
 
+static bool isValidOperationType(OperationType t)
+{
+    if (cmdline.noarithmeticops && t == _arithmetic)
+        return false;
+    if (cmdline.nobitwiseops && t == _bitwise)
+        return false;
+    if (cmdline.nologicalops && t == _logical)
+        return false;
+    return true;
+}
+
 void buildOperation(Expression *expression, Context *context, unsigned nesting)
 {
     struct OperationExpression *oe = xmalloc(sizeof(*oe));
 
-    oe->lefthand = makeExpression(context, nesting + 1), oe->righthand = makeExpression(context, nesting + 1);
-    oe->type = rand() % _operationtypemax;
+    OperationType ot;
+    int ocount = 0;
+    do {
+        ot = rand() % _operationtypemax;
+	ocount++;
+	assert(ocount < 10000 && "can't find operation type");
+    } while (!isValidOperationType(ot));
+    oe->type = ot;
 
     if(oe->type == _arithmetic)
         oe->operator.arithop = rand() % _arithopmax;
@@ -135,6 +152,7 @@ void buildOperation(Expression *expression, Context *context, unsigned nesting)
         oe->operator.logicalop = rand() % _logicalopmax;
 
     expression->expr.opexpr = oe;
+    oe->lefthand = makeExpression(context, nesting + 1), oe->righthand = makeExpression(context, nesting + 1);
 }
 
 #define ASSIGNMENT_OP_IS_INVALID(oprtr, left, right) ((((left->type == _double || left->type == _float) || (IS_FLOATING_POINT_VARIABLE(right))) && (oprtr == _assignmod)))

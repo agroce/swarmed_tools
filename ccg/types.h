@@ -271,6 +271,9 @@ typedef struct
     bool noternaryexprs;
     bool nofunctioncallexprs;
     bool nooperationexprs;
+    bool noarithmeticops;
+    bool nobitwiseops;
+    bool nologicalops;
     bool notestexprs;
     bool noassignmentexprs;
     bool noifs;

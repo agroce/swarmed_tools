@@ -50,6 +50,9 @@ static void printHelp(void)
     puts("  --no-ternaryexprs\t\t\tDisables ternary expressions (enabled by default)");
     puts("  --no-functioncallexprs\t\t\tDisables function call expressions (enabled by default)");
     puts("  --no-operationexprs\t\t\tDisables operation expressions (enabled by default)");
+    puts("  --no-arithmeticops\t\t\tDisables arithmetic operators (enabled by default)");
+    puts("  --no-bitwiseops\t\t\tDisables bitwise operators (enabled by default)");
+    puts("  --no-logicalops\t\t\tDisables logical operators (enabled by default)");
     puts("  --no-testexprs\t\t\tDisables test expressions (enabled by default)");
     puts("  --no-assignmentexprss\t\t\tDisables assignment expressions (enabled by default)");
     puts("  --no-ifs\t\t\tDisables ifs (enabled by default)");
@@ -93,6 +96,9 @@ static const struct option longopt[] =
     {"no-ternaryexprs", no_argument, NULL, 0},
     {"no-functioncallexprs", no_argument, NULL, 0},
     {"no-operationexprs", no_argument, NULL, 0},
+    {"no-arithmeticops", no_argument, NULL, 0},
+    {"no-bitwiseops", no_argument, NULL, 0},
+    {"no-logicalops", no_argument, NULL, 0},
     {"no-testexprs", no_argument, NULL, 0},
     {"no-assignmentexprs", no_argument, NULL, 0},
     {"no-ifs", no_argument, NULL, 0},
@@ -222,6 +228,15 @@ void initCommandline(void)
     index2member[index++] = &cmdline.nooperationexprs;
     index2swarmkind[swarm_index++] = SK_Flipcoin;
 
+    index2member[index++] = &cmdline.noarithmeticops;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.nobitwiseops;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
+    index2member[index++] = &cmdline.nologicalops;
+    index2swarmkind[swarm_index++] = SK_Flipcoin;
+
     index2member[index++] = &cmdline.notestexprs;
     index2swarmkind[swarm_index++] = SK_Flipcoin;
 
@@ -282,7 +297,7 @@ void initCommandline(void)
             validinttypes[numofvalidinttypes++] = _u##width;\
     }
 
-static void validateIntegerTypes(void)
+static void validateOptions(void)
 {
     /* avoid bad swarmed options */
     if (cmdline.nosignedintegers && cmdline.nounsignedintegers) {
@@ -302,6 +317,12 @@ static void validateIntegerTypes(void)
     ADD_VALID_INTEGERS(16);
     ADD_VALID_INTEGERS(32);
     ADD_VALID_INTEGERS(64);
+
+    if (cmdline.noarithmeticops && cmdline.nobitwiseops && cmdline.nologicalops) {
+        cmdline.noarithmeticops = false;
+        cmdline.nobitwiseops = false;
+        cmdline.nologicalops = false;
+    }
 }
 
 void handleSwarm(void)
@@ -316,7 +337,7 @@ void handleSwarm(void)
          */
         fakeSwarmOptions();
     }
-    validateIntegerTypes();
+    validateOptions();
 }
 
 static void handleOneCommandlineOption(int index)
